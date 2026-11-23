@@ -21,3 +21,6 @@ Add by link for closed DMs, chat filter box, Clear / Save chats, show-token, Hel
 
 ## v10
 Chat list sections (Direct messages / Group DMs) and refresh, quick switcher for chats and servers with arrow keys, exe-style statistics, Load older messages, KEPT and pinned labels, [system message], save and jump for saved messages, recent emojis, tour Skip, My account section (switch account, remove saved account, report a problem), notification / ghost-ping / lost-friend toggles.
+
+## v11
+Separate Deleted messages view (⊘ in the server bar), find bar (Ctrl+F) with counter and prev/next, selected chats as chips, "Clean this chat" box in the chat header, rules with enable switch / days / last run, guided tour that points at the real controls, APP / you / mention markers, activity entries can be removed. Fixed a startup error that could stop the logger and rules code from loading.
