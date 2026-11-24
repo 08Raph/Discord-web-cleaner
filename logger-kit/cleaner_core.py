@@ -382,6 +382,117 @@ def render_content(msg):
     return text
 
 
+CLOCK_24 = False      # English times as 20:15 instead of 8:15 PM (setting "clock_24h")
+
+# Discord's system messages (calls, pins, people added…) as readable lines, like Discord.
+_SYS = {
+    "en": {1: "{a} added {t} to the group.", 2: "{a} removed {t} from the group.",
+           "left": "{a} left the group.", "call": "{a} started a call.",
+           "call_len": "{a} started a call that lasted {n}.", "missed": "You missed a call from {a}.",
+           "missed_len": "You missed a call from {a} that lasted {n}.",
+           4: "{a} changed the channel name: {c}", 5: "{a} changed the channel icon.",
+           6: "{a} pinned a message to this channel.", 7: "{a} joined the server.",
+           8: "{a} just boosted the server!", 9: "{a} just boosted the server! It reached Level 1!",
+           10: "{a} just boosted the server! It reached Level 2!",
+           11: "{a} just boosted the server! It reached Level 3!",
+           12: "{a} added {c} to this channel.", 18: "{a} started a thread: {c}",
+           21: "Thread started from this message.", 24: "AutoMod blocked or flagged a message.",
+           46: "The poll has ended.", "other": "{a} did something in this chat.",
+           "min": "{n} minutes", "1min": "a minute", "hour": "{n} hours", "1hour": "an hour",
+           "sec": "a few seconds"},
+    "fr": {1: "{a} a ajouté {t} au groupe.", 2: "{a} a retiré {t} du groupe.",
+           "left": "{a} a quitté le groupe.", "call": "{a} a lancé un appel.",
+           "call_len": "{a} a lancé un appel qui a duré {n}.", "missed": "Vous avez manqué un appel de {a}.",
+           "missed_len": "Vous avez manqué un appel de {a} qui a duré {n}.",
+           4: "{a} a changé le nom du salon : {c}", 5: "{a} a changé l'icône du salon.",
+           6: "{a} a épinglé un message dans ce salon.", 7: "{a} a rejoint le serveur.",
+           8: "{a} vient de booster le serveur !", 9: "{a} a boosté le serveur ! Niveau 1 atteint !",
+           10: "{a} a boosté le serveur ! Niveau 2 atteint !", 11: "{a} a boosté le serveur ! Niveau 3 atteint !",
+           12: "{a} a ajouté {c} à ce salon.", 18: "{a} a créé un fil : {c}",
+           21: "Fil créé à partir de ce message.", 24: "AutoMod a bloqué ou signalé un message.",
+           46: "Le sondage est terminé.", "other": "{a} a fait quelque chose dans ce chat.",
+           "min": "{n} minutes", "1min": "une minute", "hour": "{n} heures", "1hour": "une heure",
+           "sec": "quelques secondes"},
+    "es": {1: "{a} añadió a {t} al grupo.", 2: "{a} quitó a {t} del grupo.",
+           "left": "{a} salió del grupo.", "call": "{a} inició una llamada.",
+           "call_len": "{a} inició una llamada que duró {n}.", "missed": "Tienes una llamada perdida de {a}.",
+           "missed_len": "Tienes una llamada perdida de {a} que duró {n}.",
+           4: "{a} cambió el nombre del canal: {c}", 5: "{a} cambió el icono del canal.",
+           6: "{a} fijó un mensaje en este canal.", 7: "{a} se unió al servidor.",
+           8: "¡{a} mejoró el servidor!", 9: "¡{a} mejoró el servidor! ¡Nivel 1!",
+           10: "¡{a} mejoró el servidor! ¡Nivel 2!", 11: "¡{a} mejoró el servidor! ¡Nivel 3!",
+           12: "{a} añadió {c} a este canal.", 18: "{a} empezó un hilo: {c}",
+           21: "Hilo creado a partir de este mensaje.", 24: "AutoMod bloqueó o marcó un mensaje.",
+           46: "La encuesta terminó.", "other": "{a} hizo algo en este chat.",
+           "min": "{n} minutos", "1min": "un minuto", "hour": "{n} horas", "1hour": "una hora",
+           "sec": "unos segundos"},
+    "pt": {1: "{a} adicionou {t} ao grupo.", 2: "{a} removeu {t} do grupo.",
+           "left": "{a} saiu do grupo.", "call": "{a} iniciou uma chamada.",
+           "call_len": "{a} iniciou uma chamada que durou {n}.", "missed": "Você perdeu uma chamada de {a}.",
+           "missed_len": "Você perdeu uma chamada de {a} que durou {n}.",
+           4: "{a} mudou o nome do canal: {c}", 5: "{a} mudou o ícone do canal.",
+           6: "{a} fixou uma mensagem neste canal.", 7: "{a} entrou no servidor.",
+           8: "{a} impulsionou o servidor!", 9: "{a} impulsionou o servidor! Nível 1!",
+           10: "{a} impulsionou o servidor! Nível 2!", 11: "{a} impulsionou o servidor! Nível 3!",
+           12: "{a} adicionou {c} a este canal.", 18: "{a} começou um tópico: {c}",
+           21: "Tópico criado a partir desta mensagem.", 24: "O AutoMod bloqueou ou sinalizou uma mensagem.",
+           46: "A enquete terminou.", "other": "{a} fez algo neste chat.",
+           "min": "{n} minutos", "1min": "um minuto", "hour": "{n} horas", "1hour": "uma hora",
+           "sec": "alguns segundos"},
+    "de": {1: "{a} hat {t} zur Gruppe hinzugefügt.", 2: "{a} hat {t} aus der Gruppe entfernt.",
+           "left": "{a} hat die Gruppe verlassen.", "call": "{a} hat einen Anruf gestartet.",
+           "call_len": "{a} hat einen Anruf gestartet, der {n} dauerte.", "missed": "Verpasster Anruf von {a}.",
+           "missed_len": "Verpasster Anruf von {a} ({n}).",
+           4: "{a} hat den Kanalnamen geändert: {c}", 5: "{a} hat das Kanalsymbol geändert.",
+           6: "{a} hat eine Nachricht in diesem Kanal angepinnt.", 7: "{a} ist dem Server beigetreten.",
+           8: "{a} hat den Server geboostet!", 9: "{a} hat den Server geboostet! Level 1!",
+           10: "{a} hat den Server geboostet! Level 2!", 11: "{a} hat den Server geboostet! Level 3!",
+           12: "{a} hat {c} zu diesem Kanal hinzugefügt.", 18: "{a} hat einen Thread gestartet: {c}",
+           21: "Thread aus dieser Nachricht gestartet.", 24: "AutoMod hat eine Nachricht blockiert oder markiert.",
+           46: "Die Umfrage ist beendet.", "other": "{a} hat etwas in diesem Chat gemacht.",
+           "min": "{n} Minuten", "1min": "eine Minute", "hour": "{n} Stunden", "1hour": "eine Stunde",
+           "sec": "ein paar Sekunden"},
+}
+SYS_ICONS = {1: "➜", 2: "←", 3: "📞", 4: "✏", 5: "✏", 6: "📌", 7: "➜", 8: "🚀", 9: "🚀", 10: "🚀",
+             11: "🚀", 12: "➜", 18: "🧵", 21: "🧵", 24: "🛡", 46: "📊"}
+
+
+def is_system(m):
+    return m.get("type") not in DELETABLE_TYPES and m.get("type") is not None
+
+
+def system_text(m, my_id=None, lang=None):
+    """(icon, text) for a Discord system message, e.g. ('📞', 'Alex started a call that
+    lasted 5 minutes.'). Works for DMs and servers."""
+    T = _SYS.get(lang or LANG, _SYS["en"])
+    t = m.get("type")
+    au = m.get("author") or {}
+    a = au.get("global_name") or au.get("username") or "?"
+    ment = m.get("mentions") or []
+    target = (ment[0].get("global_name") or ment[0].get("username")) if ment else "?"
+    c = m.get("content") or ""
+    if t == 3:
+        call = m.get("call") or {}
+        n = None
+        if call.get("ended_timestamp"):
+            try:
+                t0 = datetime.fromisoformat(m["timestamp"].replace("Z", "+00:00"))
+                t1 = datetime.fromisoformat(call["ended_timestamp"].replace("Z", "+00:00"))
+                secs = max(0, (t1 - t0).total_seconds())
+                n = (T["sec"] if secs < 60 else T["1min"] if secs < 120 else
+                     T["min"].format(n=int(secs // 60)) if secs < 3600 else
+                     T["1hour"] if secs < 7200 else T["hour"].format(n=int(secs // 3600)))
+            except (KeyError, ValueError):
+                n = None
+        missed = my_id and au.get("id") != my_id and my_id not in (call.get("participants") or [])
+        key = ("missed" if missed else "call") + ("_len" if n else "")
+        return "📞", T[key].format(a=a, n=n)
+    if t == 2 and ment and ment[0].get("id") == au.get("id"):
+        return "←", T["left"].format(a=a)
+    tpl = T.get(t, T["other"])
+    return SYS_ICONS.get(t, "•"), tpl.format(a=a, t=target, c=c)
+
+
 def format_time(iso):
     """Discord-like time: 'Today at 3:14 PM' or '11/21/2026 3:14 PM'."""
     try:
@@ -399,7 +510,7 @@ def format_time(iso):
             return f"{words[1]} {clock}"
         sep = "." if LANG == "de" else "/"
         return f"{dt.day:02d}{sep}{dt.month:02d}{sep}{dt.year} {clock}"
-    clock = dt.strftime("%I:%M %p").lstrip("0")
+    clock = dt.strftime("%H:%M") if CLOCK_24 else dt.strftime("%I:%M %p").lstrip("0")
     if dt.date() == now.date():
         return f"Today at {clock}"
     if (now.date() - dt.date()).days == 1:

@@ -43,3 +43,6 @@ Use it as your everyday Discord: the 🧹 button (or Settings) hides every clean
 
 ## v14
 Mute a chat or server or get only @mentions (right-click), unread dots and red mention badges on server icons, @mention suggestions while typing, GIF picker (Discord's Tenor search), search with filters (from: mentions: has: before: after: during: pinned:), members panel for server channels (people active in the channel), 10-second undo after deleting a message, compact mode and text size, reopens your last chat, Alt+↑/↓ and Ctrl+Shift+M, logger dashboard and edit-history export, swipe between screens on phones.
+
+## v15
+Cleaner chat header with icons (call, pins, members, search, more, cleaning tools) and a ⋯ menu for everything else, calls / pins / people joining shown like in Discord instead of "[system message]", activity log folds to one line, tablet layout (the cleaning panel slides in from the right), Customize: 6 themes, accent colour, time style, avatars on/off, log on/off.
