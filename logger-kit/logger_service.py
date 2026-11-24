@@ -106,7 +106,7 @@ class Logger:
     When it starts again after your PC was off, it checks your DMs and finds what was
     deleted or edited while it wasn't running (for messages it had already seen)."""
 
-    def __init__(self, store, account_id, token, save_pictures=False, keep_days=7,
+    def __init__(self, store, account_id, token, save_pictures=False, keep_days=7, deleted_days=0,
                  ghost_pings=True, friends=True, catch_up=True, api=None, ignore=(),
                  export_path=None):
         self.store = store
@@ -114,6 +114,7 @@ class Logger:
         self.token = token
         self.save_pictures = save_pictures
         self.keep_days = keep_days
+        self.deleted_days = deleted_days
         self.ghost_pings = ghost_pings
         self.track_friends = friends
         self.catch_up = catch_up
@@ -142,6 +143,7 @@ class Logger:
             if now - self.last_prune > 3600:
                 self.last_prune = now
                 self.store.prune(self.keep_days)
+                self.store.prune_deleted(self.deleted_days)
             if self.export_path and now - self.last_export > 600:
                 self.last_export = now
                 try:
@@ -441,6 +443,7 @@ def main():
     try:
         Logger(store, account, token, save_pictures=bool(st.get("logger_pictures")),
                keep_days=int(st.get("logger_days", 7) or 7),
+               deleted_days=int(st.get("deleted_keep_days", 0) or 0),
                ghost_pings=st.get("logger_ghost", True) is not False,
                friends=st.get("logger_friends", True) is not False,
                catch_up=st.get("logger_catchup", True) is not False,

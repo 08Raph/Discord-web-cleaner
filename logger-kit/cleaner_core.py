@@ -457,6 +457,22 @@ def list_guilds(api):
             for g in guilds or []]
 
 
+def list_guild_roles(api, guild_id):
+    """{role_id: (name, colour)} for a server; empty on any error."""
+    try:
+        st, roles = api.request("GET", f"/guilds/{guild_id}/roles")
+    except Exception:
+        return {}
+    if st != 200 or not isinstance(roles, list):
+        return {}
+    return {r["id"]: (r.get("name", "role"), r.get("color", 0)) for r in roles if "id" in r}
+
+
+def message_link(m, guild_id=None):
+    """https://discord.com/channels/<guild or @me>/<channel>/<message>"""
+    return f"https://discord.com/channels/{guild_id or m.get('guild_id') or '@me'}/{m.get('channel_id')}/{m['id']}"
+
+
 def list_guild_channels(api, guild_id):
     """Text channels of a server, ordered like in Discord, with their category name."""
     st, chans = api.request("GET", f"/guilds/{guild_id}/channels")

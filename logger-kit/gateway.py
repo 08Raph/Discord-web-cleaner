@@ -12,6 +12,7 @@ import random
 import socket
 import ssl
 import struct
+import threading
 import time
 from urllib.parse import urlparse
 
@@ -155,6 +156,14 @@ class GatewaySession:
         self.seq = None
         self.on_status = on_status
         self.fatal = None
+        self.presence = None          # {"status": ..., "activities": [...]} sent when connecting
+        self._outbox = []             # messages other threads want sent (e.g. status changes)
+        self._out_lock = threading.Lock()
+
+    def send(self, op, d):
+        """Queue a gateway message; it's sent from the connection thread within ~2 s."""
+        with self._out_lock:
+            self._outbox.append({"op": op, "d": d})
 
     def run_forever(self):
         backoff = 5
@@ -204,6 +213,10 @@ class GatewaySession:
                     ws.send_json({"op": 1, "d": self.seq})
                     acked = False
                     next_beat = now + interval
+                with self._out_lock:
+                    out, self._outbox = self._outbox, []
+                for item in out:
+                    ws.send_json(item)
                 msg = ws.recv_json(min(2.0, max(0.1, next_beat - now)))
                 if msg is None:
                     continue
@@ -243,5 +256,6 @@ class GatewaySession:
             "properties": {"os": "Windows", "browser": "Chrome", "device": "",
                            "system_locale": "en-US", "browser_user_agent":
                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
-            "presence": {"status": "unknown", "since": 0, "activities": [], "afk": False},
+            "presence": dict({"status": "unknown", "since": 0, "activities": [], "afk": False},
+                             **(self.presence or {})),
             "compress": False}})
