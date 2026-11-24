@@ -446,7 +446,7 @@ rich=s=>{const cb=[],keep=h=>"\0"+(cb.push(h)-1)+"\0";let t=esc(s).replace(/```(
  .replace(/&lt;(a?):(\w+):(\d+)&gt;/g,(_,a,n,i)=>`<img class="em" src="${CDN}/emojis/${i}.${a?"gif":"png"}?size=48" title="${n}">`)
  .replace(/&lt;@&amp;(\d+)&gt;/g,(_,i)=>{const r=ROLES[i];return `<span class="mn"${r&&r.c?` style="color:#${r.c.toString(16).padStart(6,"0")}"`:""}>@${esc(r?r.n:"role")}</span>`})
  .replace(/&lt;t:(-?\d+)(?::(\w))?&gt;/g,(_,n,f)=>`<span class="mn" title="${new Date(n*1e3).toLocaleString(LOC())}">${tsf(+n,f)}</span>`)
- .replace(/&lt;@!?(\d+)&gt;/g,(_,i)=>`<span class="mn">@${esc(window.MN&&window.MN[i]||"user")}</span>`)
+ .replace(/&lt;@!?(\d+)&gt;/g,(_,i)=>`<span class="mn">@${esc(window.MN&&window.MN[i]||(window.nameById&&nameById(i))||"user")}</span>`)
  .replace(/&lt;#(\d+)&gt;/g,(_,i)=>{const c=(window.curCh||[]).find(x=>x.id===i);return `<span class="mn">#${esc(c?c.name:"channel")}</span>`})
  .replace(/(^|\s)(@everyone|@here)(?!\w)/g,'$1<span class="mn">$2</span>');
  return t.replace(/\0(\d+)\0/g,(_,i)=>cb[i])};
@@ -646,7 +646,7 @@ $("msgs").addEventListener("click",e=>{const a=e.target.closest("[data-fg]");if(
 <script>
 // ---- v12: relay connection (Discord blocks websites), offline catch-up, edit history, multiple files + drag & drop,
 //      typing indicator, unread counts, collapsible filters, version / what's new
-const V12="13.0.0";
+const V12="14.0.0";
 const T=s=>{try{if(lang==="en")return s;const i=K.indexOf(s);return i>=0&&LG[lang][i]||s}catch(e){return s}};
 [["Connection","Conexión","Conexão","Verbindung","Connexion"],["Relay address","Dirección del relay","Endereço do relay","Relay-Adresse","Adresse du relais"],["Test","Probar","Testar","Testen","Tester"],
 ["How to set up the free relay","Cómo crear el relay gratis","Como criar o relay grátis","So richtest du das kostenlose Relay ein","Installer le relais gratuit"],["Automatic","Automático","Automático","Automatisch","Automatique"],["Direct only","Solo directo","Só direto","Nur direkt","Direct uniquement"],["Always use the relay","Usar siempre el relay","Sempre usar o relay","Immer das Relay nutzen","Toujours utiliser le relais"],
@@ -921,6 +921,140 @@ const _se13=settings;settings=function(){_se13();const h=$("mb").querySelector("
   localStorage.dmc_status=$("p-s").value;const c=$("p-c").value.trim();c?localStorage.dmc_cstatus=c:localStorage.removeItem("dmc_cstatus");sendPresence();if(!demo)api("PATCH","/users/@me/settings",{status:$("p-s").value,custom_status:c?{text:c}:null}).catch(()=>{});out.push(T("Status"));
   r.className="ok";r.textContent="✔ "+out.join(", ");$("me").querySelector("b").textContent=nm(me)}catch(e){r.className="err";r.textContent=(out.length?"✔ "+out.join(", ")+" · ":"")+"✘ "+e.message}};applyLang()};
 $("bSet").onclick=()=>settings();
+applyLang();
+</script>
+
+<style>
+/* ---- v14 */
+.sv{position:relative;overflow:visible}.sv img{border-radius:inherit}.sv .ud{position:absolute;left:-14px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:0 4px 4px 0;background:var(--tx)}.sv .mb{position:absolute;right:-4px;bottom:-4px;background:var(--red);color:#fff;border:3px solid var(--rail);border-radius:10px;font:700 11px sans-serif;padding:0 5px;min-width:18px;text-align:center}
+.sv.muted,.it.muted span{opacity:.45}
+#mention{position:absolute;bottom:64px;left:12px;right:12px;background:var(--side);border:1px solid var(--br);border-radius:8px;box-shadow:0 8px 20px #0007;max-height:260px;overflow:auto;z-index:25;display:none}#mention.on{display:block}#mention div{display:flex;gap:8px;align-items:center;padding:6px 10px;cursor:pointer}#mention div.sel,#mention div:hover{background:var(--fld)}#mention small{color:var(--mu)}
+#main{position:relative}#comp{position:relative}
+#gifg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}#gifg video,#gifg img{width:100%;height:110px;object-fit:cover;border-radius:6px;cursor:pointer;background:var(--rail)}
+#mem{position:absolute;top:49px;right:0;bottom:0;width:230px;background:var(--side);border-left:1px solid var(--br);overflow:auto;padding:8px;display:none;z-index:5}body.memon #mem{display:block}body.memon #msgs,body.memon #comp,body.memon #fbar{margin-right:230px}#mem h5{margin:12px 6px 4px;color:var(--mu);font-size:11px;text-transform:uppercase}#mem .mu{display:flex;gap:8px;align-items:center;padding:5px 6px;border-radius:4px;cursor:pointer;color:var(--mu)}#mem .mu:hover{background:var(--fld);color:var(--tx)}#mem .off{opacity:.5}
+#undo{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--rail);border:1px solid var(--br);border-radius:8px;padding:10px 14px;display:flex;gap:12px;align-items:center;z-index:45;box-shadow:0 6px 16px #0008}
+.sq{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.sq span{background:var(--fld);border-radius:4px;padding:2px 8px;font-size:12px;cursor:pointer}
+body.compact .m{padding-top:1px;padding-bottom:1px}body.compact .m>.av{width:20px;height:20px;font-size:9px}body.compact .dv{margin:6px 16px}body.compact .m .c{display:inline}
+.dash .bars{display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid var(--br);margin:6px 0 2px}.dash .bars i{flex:1;background:var(--red);min-height:1px;border-radius:2px 2px 0 0}.dash .bars i.g{background:#f0b232}
+@media(max-width:700px){#tools button{padding:8px 10px}.it{padding:10px 8px}#mem{width:100%}body.memon #msgs,body.memon #comp{margin-right:0}}
+</style>
+<script>
+// ---- v14: mute + mentions-only, server unread dots, @mention autocomplete, GIF picker, search filters, member panel,
+//      undo for single deletes, last chat, shortcuts, compact mode + font size, logger dashboard, edit-history export, swipe on phones
+[["Mute","Silenciar","Silenciar","Stummschalten","Mettre en sourdine"],["Unmute","Activar sonido","Reativar","Stumm aus","Réactiver"],["Only @mentions","Solo @menciones","Só @menções","Nur @Erwähnungen","Seulement les @mentions"],["All messages","Todos los mensajes","Todas as mensagens","Alle Nachrichten","Tous les messages"],["Mark as read","Marcar como leído","Marcar como lido","Als gelesen markieren","Marquer comme lu"],
+["Members","Miembros","Membros","Mitglieder","Membres"],["Active in this channel","Activos en este canal","Ativos neste canal","Aktiv in diesem Kanal","Actifs dans ce salon"],["Search GIFs","Buscar GIFs","Buscar GIFs","GIFs suchen","Chercher des GIF"],["Deleted","Borrado","Apagada","Gelöscht","Supprimé"],["Undo","Deshacer","Desfazer","Rückgängig","Annuler"],
+["Compact mode","Modo compacto","Modo compacto","Kompaktmodus","Mode compact"],["Text size","Tamaño del texto","Tamanho do texto","Textgröße","Taille du texte"],["Open the last chat when the app starts","Abrir el último chat al iniciar","Abrir o último chat ao iniciar","Beim Start den letzten Chat öffnen","Ouvrir le dernier chat au démarrage"],
+["Dashboard","Panel","Painel","Übersicht","Tableau de bord"],["Export edit history","Exportar historial de ediciones","Exportar histórico de edições","Bearbeitungsverlauf exportieren","Exporter l'historique des modifications"],["Notifications","Notificaciones","Notificações","Benachrichtigungen","Notifications"],["Search","Buscar","Buscar","Suchen","Chercher"]
+].forEach(r=>{K.push(r[0]);["es","pt","de","fr"].forEach((l,i)=>{LG[l].push(r[i+1]);LT[l][r[0]]=r[i+1]})});
+
+// ---------- mute / mentions-only per chat or server, unread dots and mention badges on server icons
+let MUTES=JSON.parse(localStorage.dmc_mutes||"{}");const saveMutes=()=>localStorage.dmc_mutes=JSON.stringify(MUTES);
+const muteOf=(cid,gid)=>MUTES[cid]||(gid&&MUTES[gid])||"";
+const GU={},GM={};
+function railMarks(){document.querySelectorAll("#rail .sv[data-g]").forEach(s=>{const g=s.dataset.g;if(!g)return;s.querySelectorAll(".ud,.mb").forEach(x=>x.remove());s.classList.toggle("muted",MUTES[g]==="all");if(GU[g]&&MUTES[g]!=="all")s.insertAdjacentHTML("beforeend",'<i class="ud"></i>');if(GM[g])s.insertAdjacentHTML("beforeend",`<b class="mb">${GM[g]}</b>`)});
+ document.querySelectorAll("#list .it[data-id]").forEach(it=>it.classList.toggle("muted",!!MUTES[it.dataset.id]))}
+const _rl14=rail;rail=()=>{_rl14();railMarks()};
+$("rail").addEventListener("click",e=>{const s=e.target.closest(".sv[data-g]");if(s&&s.dataset.g){delete GU[s.dataset.g];delete GM[s.dataset.g];setTimeout(railMarks)}});
+function onGw14(e){let p;try{p=JSON.parse(e.data)}catch(x){return}if(p.op!==0||p.t!=="MESSAGE_CREATE"||!p.d||!p.d.guild_id||!me||(p.d.author||{}).id===me.id)return;const d=p.d,g=d.guild_id,ping=(d.mentions||[]).some(u=>u.id===me.id)||d.mention_everyone,mu=muteOf(d.channel_id,g);
+ if(d.channel_id===cur&&!document.hidden)return;if(ping&&mu!=="all"){GM[g]=(GM[g]||0)+1;notify("@ "+nm(d.author||{}),(d.content||"").slice(0,90))}if(!mu)GU[g]=1;railMarks()}
+const _gw14=gw;gw=async()=>{await _gw14();if(ws&&!ws.__v14){ws.__v14=1;ws.addEventListener("message",onGw14)}};
+// DMs: unread count always, notification only when not muted (redefines the v12 handler)
+liveMsg=function(d,t){if(t!=="MESSAGE_CREATE")return;LAST.set(d.id,d.content);
+ if(d.channel_id===cur){if(!cache.some(x=>x.id===d.id)){cache.push(d);render(true)}if(!document.hidden)return}
+ if(d.guild_id)return;const mu=muteOf(d.channel_id),ping=(d.mentions||[]).some(u=>me&&u.id===me.id);UC[d.channel_id]=(UC[d.channel_id]||0)+1;unr.add(d.channel_id);
+ const it=document.querySelector(`#list .it[data-id="${d.channel_id}"]`);if(it){it.querySelectorAll(".badge").forEach(b=>b.remove());if(mu!=="all")it.insertAdjacentHTML("beforeend",`<b class="badge">${UC[d.channel_id]}</b>`);const h=it.parentElement.querySelector(".it");if(h&&h!==it&&!$("flt").value)h.before(it)}
+ setT();if(!mu||(mu==="mentions"&&ping))notify("New message from "+nm(d.author),(d.content||((d.attachments||[]).length?"📎 attachment":"")).slice(0,80))};
+function muteMenu(e,id,name){e.preventDefault();const mn=$("menu");mn.innerHTML="";const add=(t,f)=>{const d=document.createElement("div");d.textContent=t;d.onclick=()=>{mn.hidden=true;f()};mn.appendChild(d)};const m=MUTES[id]||"";
+ add((m==="all"?"✓ ":"")+T("Mute"),()=>{MUTES[id]=m==="all"?undefined:"all";if(!MUTES[id])delete MUTES[id];saveMutes();railMarks()});add((m==="mentions"?"✓ ":"")+T("Only @mentions"),()=>{MUTES[id]="mentions";saveMutes();railMarks()});add((!m?"✓ ":"")+T("All messages"),()=>{delete MUTES[id];saveMutes();railMarks()});add(T("Mark as read"),()=>{delete GU[id];delete GM[id];delete UC[id];setT();document.querySelectorAll(`.it[data-id="${id}"] .badge`).forEach(b=>b.remove());railMarks()});
+ mn.style.cssText=`left:${e.clientX}px;top:${e.clientY}px`;mn.hidden=false;e.stopPropagation()}
+$("rail").addEventListener("contextmenu",e=>{const s=e.target.closest(".sv[data-g]");if(s&&s.dataset.g)muteMenu(e,s.dataset.g,s.title)});
+$("list").addEventListener("contextmenu",e=>{const it=e.target.closest(".it[data-id]");if(it)muteMenu(e,it.dataset.id,it.textContent)});
+const _sd14=showDMs;showDMs=d=>{_sd14(d);railMarks()};
+
+// ---------- @mention autocomplete in the message box
+$("comp").insertAdjacentHTML("beforeend",'<div id="mention"></div>');let mSel=0,mList=[],MENT={};
+function people(){const m=new Map();const add=u=>{if(u&&u.id&&me&&u.id!==me.id&&!m.has(u.id))m.set(u.id,u)};cache.slice().reverse().forEach(x=>add(x.author));(DML||[]).filter(c=>c.id===cur).forEach(c=>(c.recipients||[]).forEach(add));(REL||[]).filter(r=>r.type===1).forEach(r=>add(r.user));return[...m.values()]}
+function mentionUI(){const mi=$("mi"),v=mi.value.slice(0,mi.selectionStart),q=(v.match(/(?:^|\s)@([\w.]*)$/)||[])[1];const box=$("mention");if(q==null||!cur){box.classList.remove("on");return}
+ mList=people().filter(u=>(nm(u)+" "+(u.username||"")).toLowerCase().includes(q.toLowerCase())).slice(0,8);if(cur&&(DML||[]).every(c=>c.id!==cur))mList.push({id:"everyone",username:"everyone",global_name:"everyone"});mSel=Math.min(mSel,Math.max(0,mList.length-1));
+ if(!mList.length){box.classList.remove("on");return}box.innerHTML=mList.map((u,i)=>`<div data-mi="${i}" class="${i===mSel?"sel":""}">${av(nm(u),u)}<b>${esc(nm(u))}</b><small>${esc(u.username||"")}</small></div>`).join("");box.classList.add("on")}
+function mentionPick(i){const u=mList[i];if(!u)return;const mi=$("mi"),pos=mi.selectionStart,v=mi.value.slice(0,pos),rest=mi.value.slice(pos),tag="@"+(u.id==="everyone"?"everyone":nm(u));const nv=v.replace(/@([\w.]*)$/,tag+" ");mi.value=nv+rest;if(u.id!=="everyone")MENT[tag]=u.id;mi.focus();mi.selectionStart=mi.selectionEnd=nv.length;$("mention").classList.remove("on")}
+$("mi").addEventListener("input",()=>{mSel=0;mentionUI()});$("mention").addEventListener("mousedown",e=>{const d=e.target.closest("[data-mi]");if(d){e.preventDefault();mentionPick(+d.dataset.mi)}});
+$("mi").addEventListener("keydown",e=>{if(!$("mention").classList.contains("on"))return;if(e.key==="ArrowDown"||e.key==="ArrowUp"){mSel=(mSel+(e.key==="ArrowDown"?1:-1)+mList.length)%mList.length;mentionUI();e.preventDefault();e.stopImmediatePropagation()}else if(e.key==="Enter"||e.key==="Tab"){mentionPick(mSel);e.preventDefault();e.stopImmediatePropagation()}else if(e.key==="Escape"){$("mention").classList.remove("on");e.stopImmediatePropagation()}},true);
+$("mi").addEventListener("blur",()=>setTimeout(()=>$("mention").classList.remove("on"),150));
+const _snd14=send;send=async function(){const mi=$("mi");let v=mi.value;Object.entries(MENT).sort((a,b)=>b[0].length-a[0].length).forEach(([t,id])=>{v=v.split(t).join(`<@${id}>`)});mi.value=v;const r=await _snd14();if(!mi.value)MENT={};return r};
+
+window.nameById=id=>{const u=(cache.find(m=>m.author&&m.author.id===id)||{}).author||((REL||[]).find(r=>r.id===id)||{}).user||(DML||[]).flatMap(c=>c.recipients||[]).find(r=>r.id===id);return u&&nm(u)};
+// ---------- GIF picker (Discord's own GIF search)
+$("emo").insertAdjacentHTML("beforebegin",'<button class="g" id="gifb" title="GIF">GIF</button>');
+async function gifs(q){const g=$("gifg");g.innerHTML='<p class="warn">…</p>';if(demo){g.innerHTML='<p class="warn">GIF search needs a real account (demo mode).</p>';return}
+ try{const r=q?await api("GET",`/gifs/search?q=${encodeURIComponent(q)}&media_format=mp4&provider=tenor&locale=${navigator.language||"en-US"}`):await api("GET",`/gifs/trending-gifs?media_format=mp4&provider=tenor&locale=${navigator.language||"en-US"}`);const L=Array.isArray(r)?r:(r&&r.gifs)||[];
+  g.innerHTML=L.slice(0,30).map((x,i)=>`<video data-gi="${i}" src="${esc(x.src||x.gif_src||"")}" autoplay loop muted playsinline poster="${esc(x.preview||"")}"></video>`).join("")||'<p class="warn">Nothing found.</p>';g._l=L}catch(e){g.innerHTML=`<p class="err">${esc(e.message)}</p>`}}
+$("gifb").onclick=()=>{if(!cur)return;modal(`<h3>GIF</h3><input type="text" id="gifq" placeholder="Search GIFs"><div id="gifg"></div><div class="warn" style="margin-top:6px">Powered by Tenor, through Discord.</div>`);let t;$("gifq").oninput=()=>{clearTimeout(t);t=setTimeout(()=>gifs($("gifq").value.trim()),400)};$("gifq").focus();gifs("");
+ $("gifg").onclick=async e=>{const v=e.target.closest("[data-gi]");if(!v)return;const x=$("gifg")._l[v.dataset.gi];$("mod").style.display="none";const keep=$("mi").value;$("mi").value=x.url||x.src;await send();$("mi").value=keep}};
+
+// ---------- search with filters like Discord: from: mentions: has: before: after: during: pinned:
+const WPR=window.prompt,SNOW=t=>String((BigInt(Math.floor(t))-1420070400000n)<<22n);
+function searchQuery(raw){const P=new URLSearchParams(),words=[],who=q=>{q=q.toLowerCase().replace(/^@/,"");const u=people().concat(me?[me]:[]).find(u=>nm(u).toLowerCase()===q||(u.username||"").toLowerCase()===q)||people().find(u=>nm(u).toLowerCase().startsWith(q));return u&&u.id};
+ raw.match(/\S+:"[^"]*"|\S+/g)?.forEach(tok=>{const m=tok.match(/^(from|mentions|has|before|after|during|pinned):(.+)$/i);if(!m)return words.push(tok);const k=m[1].toLowerCase(),v=m[2].replace(/"/g,"");
+  if(k==="from"||k==="mentions"){const id=v.toLowerCase()==="me"?me.id:who(v);id?P.append(k==="from"?"author_id":"mentions",id):words.push(tok)}
+  else if(k==="has")P.append("has",v.toLowerCase().replace(/s$/,"").replace("image","image").replace("picture","image"));
+  else if(k==="pinned")P.set("pinned",v.toLowerCase()==="true"||v==="yes"?"true":"false");
+  else{const t=Date.parse(v);if(isNaN(t))return words.push(tok);if(k==="before")P.set("max_id",SNOW(t));if(k==="after")P.set("min_id",SNOW(t+864e5));if(k==="during"){P.set("min_id",SNOW(t));P.set("max_id",SNOW(t+864e5))}}});
+ if(words.length)P.set("content",words.join(" "));return P}
+async function searchUI(pre){if(!cur)return;modal(`<h3>🔎 ${T("Search")}</h3><input type="text" id="sq" value="${esc(pre||"")}" placeholder="hello from:alex has:link before:2026-01-01"><div class="sq">${["from:","mentions:","has:link","has:image","has:file","has:video","before:","after:","during:","pinned:true"].map(x=>`<span>${x}</span>`).join("")}</div><div id="sr"></div>`);
+ const go=async()=>{const q=$("sq").value.trim();if(!q)return;$("sr").innerHTML='<p class="warn">…</p>';if(demo){const P=searchQuery(q),c=P.get("content")||"",hs=cache.filter(m=>(!c||(m.content||"").toLowerCase().includes(c.toLowerCase()))&&(!P.get("author_id")||m.author.id===P.get("author_id")));return show(hs.length,hs)}
+  try{const c=await chInfo(cur),P=searchQuery(q);if(c.guild_id)P.set("channel_id",cur);let r;for(let i=0;i<4;i++){r=await api("GET",(c.guild_id?`/guilds/${c.guild_id}/messages/search?`:`/channels/${cur}/messages/search?`)+P);if(r&&r.messages)break;await sleep(((r&&r.retry_after)||2)*1e3)}show(r.total_results,(r.messages||[]).map(g=>g.find(x=>x.hit)||g[0]))}catch(e){$("sr").innerHTML=`<p class="err">${esc(e.message)}</p>`}};
+ const show=(n,hs)=>{$("sr").innerHTML=`<h4>${n??hs.length} result(s)</h4>`+hs.map(m=>`<div class="it" data-j="${m.id}" style="display:block"><b>${esc(nm(m.author))}</b> <small class="warn">${new Date(m.timestamp).toLocaleString(LOC())}</small><div>${rich(m.content||"")}</div></div>`).join("")};
+ $("sq").onkeydown=e=>e.key==="Enter"&&go();$("mb").onclick=async e=>{const s=e.target.closest(".sq span");if(s){$("sq").value=($("sq").value+" "+s.textContent).trim();$("sq").focus();return}const j=e.target.closest("[data-j]");if(!j)return;$("mod").style.display="none";if(!demo)cache=(await api("GET",`/channels/${cur}/messages?limit=50&around=${j.dataset.j}`)).reverse();render();const el=document.querySelector(`.m[data-id="${j.dataset.j}"]`);el&&el.scrollIntoView({block:"center"})};$("sq").focus();if(pre)go()}
+$("tools").addEventListener("click",e=>{const a=e.target.closest("[data-a=srch]");if(!a||!cur)return;e.stopImmediatePropagation();const pre=window.prompt!==WPR?window.prompt(""):"";searchUI(pre)},true);
+
+// ---------- member panel: people active in the channel, with their status
+$("tools").insertAdjacentHTML("beforeend",'<button class="g" data-a="mem" title="Members">👥</button>');$("main").insertAdjacentHTML("beforeend",'<div id="mem"></div>');
+function members(){if(!document.body.classList.contains("memon"))return;const hd=$("hd"),fb=$("fb");$("mem").style.top=(hd.offsetTop+hd.offsetHeight+(fb.classList.contains("on")?fb.offsetHeight:0))+"px";const ps=new Map();cache.forEach(m=>m.author&&ps.set(m.author.id,m.author));if(me)ps.set(me.id,me);const L=[...ps.values()],on=L.filter(u=>st(u.id)!=="offline"||(me&&u.id===me.id)),off=L.filter(u=>!on.includes(u));
+ const row=u=>{const s=me&&u.id===me.id?localStorage.dmc_status||"online":st(u.id);return`<div class="mu ${on.includes(u)?"":"off"}" data-u="${u.id}">${av(nm(u),u).replace('class="av"',`class="av ${s!=="offline"&&s!=="invisible"?"st-"+s:""}"`)}<span>${esc(nm(u))}</span>${u.bot?'<span class="app">APP</span>':""}</div>`};
+ $("mem").innerHTML=`<div class="warn" style="padding:4px 6px">${T("Active in this channel")}</div><h5>${T("Online")} — ${on.length}</h5>${on.map(row).join("")}<h5>Offline — ${off.length}</h5>${off.map(row).join("")}`}
+$("mem").onclick=e=>{const r=e.target.closest("[data-u]");if(!r)return;const u=cache.map(m=>m.author).find(a=>a&&a.id===r.dataset.u)||me;profile(u)};
+$("tools").addEventListener("click",e=>{if(!e.target.closest("[data-a=mem]"))return;const on=!document.body.classList.contains("memon");document.body.classList.toggle("memon",on);localStorage.dmc_mem=on?"1":"0";members()});
+const _rd14=render;render=ks=>{_rd14(ks);members()};
+const _o14=open;open=async(id,n)=>{const r=await _o14(id,n);const c=(DML||[]).find(x=>x.id===id);const isDm=!!c;document.body.classList.toggle("memon",!isDm&&localStorage.dmc_mem!=="0"&&!document.body.classList.contains("frv"));const b=$("tools").querySelector("[data-a=mem]");if(b)b.style.display=isDm?"none":"";members();
+ if(!PKG[id]&&!String(id).startsWith("g:")){localStorage.dmc_last=JSON.stringify({id,n,g:document.querySelector(".sv.on")?.dataset.g||""})}return r};
+const _fr14=friends;friends=async(...a)=>{document.body.classList.remove("memon");return _fr14(...a)};
+
+// ---------- undo for a single deleted message (10 seconds)
+let pendDel=null;function softDelete(m){if(pendDel)pendDel.go();const el=document.querySelector(`.m[data-id="${m.id}"]`);el&&(el.style.display="none");const ch=cur;
+ document.body.insertAdjacentHTML("beforeend",`<div id="undo">🗑 ${T("Deleted")} <button id="undob">${T("Undo")}</button><span class="warn" id="undoc">10</span></div>`);let n=10;
+ const tick=setInterval(()=>{n--;$("undoc")&&($("undoc").textContent=n);if(n<=0)pendDel&&pendDel.go()},1e3);
+ pendDel={go:async()=>{clearInterval(tick);$("undo")&&$("undo").remove();pendDel=null;try{await api("DELETE",`/channels/${ch}/messages/${m.id}`);if(ch===cur){cache=cache.filter(x=>x.id!==m.id);render(true)}}catch(e){log("Could not delete: "+e.message);el&&(el.style.display="")}},
+  undo:()=>{clearInterval(tick);$("undo")&&$("undo").remove();pendDel=null;el&&(el.style.display="")}};$("undob").onclick=()=>pendDel&&pendDel.undo()}
+$("msgs").addEventListener("click",e=>{const b=e.target.closest('.tb span[data-t="del"]');if(!b)return;e.stopImmediatePropagation();const m=cache.find(x=>x.id===b.closest(".m").dataset.id);m&&softDelete(m)},true);
+addEventListener("beforeunload",()=>{pendDel&&pendDel.go()});
+
+// ---------- keyboard: Alt+↑/↓ next chat, Ctrl+Shift+M mute this chat, Esc closes windows
+document.addEventListener("keydown",e=>{if(e.altKey&&(e.key==="ArrowUp"||e.key==="ArrowDown")){const L=[...document.querySelectorAll("#list .it[data-id]")].filter(x=>x.style.display!=="none");if(!L.length)return;let i=L.findIndex(x=>x.dataset.id===cur);i=i<0?0:Math.max(0,Math.min(L.length-1,i+(e.key==="ArrowDown"?1:-1)));L[i].querySelector("span").click();L[i].scrollIntoView({block:"nearest"});e.preventDefault()}
+ else if(e.ctrlKey&&e.shiftKey&&(e.key==="M"||e.key==="m")&&cur){MUTES[cur]?delete MUTES[cur]:MUTES[cur]="all";saveMutes();railMarks();log((MUTES[cur]?"🔕 ":"🔔 ")+$("title").textContent);e.preventDefault()}
+ else if(e.key==="Escape"&&$("mod").style.display==="grid"&&!e.target.closest("#mb input"))$("mod").style.display="none"});
+
+// ---------- appearance: compact mode, text size; open the last chat on start
+PF.push(["dmc_compact","Compact mode",0],["dmc_lastopen","Open the last chat when the app starts",1]);
+const ap14=()=>{document.body.classList.toggle("compact",pv("dmc_compact",0));document.body.style.fontSize=(+localStorage.dmc_fs||14)+"px"};ap14();
+$("mb").addEventListener("change",e=>{if(e.target.dataset.pf==="dmc_compact")setTimeout(ap14);if(e.target.id==="s-fs"){localStorage.dmc_fs=e.target.value;ap14()}});
+const _se14=settings;settings=function(){_se14();const h=[...$("mb").querySelectorAll("h4")].find(x=>x.textContent.trim()===T("Appearance")||x.textContent.trim()==="Appearance");h&&h.nextElementSibling.insertAdjacentHTML("afterend",`<label style="margin-top:6px">${T("Text size")} <input type="range" id="s-fs" min="12" max="18" value="${+localStorage.dmc_fs||14}" style="flex:1"></label>`);applyLang()};$("bSet").onclick=()=>settings();
+const _s14=start;start=async(...a)=>{await _s14(...a);if(!me||!pv("dmc_lastopen",1))return;try{const l=JSON.parse(localStorage.dmc_last||"null");if(!l)return;if(l.g){const s=document.querySelector(`.sv[data-g="${l.g}"]`);if(!s)return;s.click();await sleep(1200)}const it=document.querySelector(`#list .it[data-id="${l.id}"] span`);it&&it.click()}catch(e){}};
+
+// ---------- logger: dashboard and edit-history export
+function dashboard(){const days=30,now=Date.now(),D=Array(days).fill(0),G=Array(days).fill(0),who={};logd.forEach(x=>{const i=days-1-Math.floor((now-x.at)/864e5);if(i<0||i>=days)return;const act=(x.c||"").startsWith("Activity");if(x.ping&&!x.dm)G[i]++;else if(!act)D[i]++;if(!act)who[x.a]=(who[x.a]||0)+1});
+ const mx=Math.max(1,...D,...G),top=Object.entries(who).sort((a,b)=>b[1]-a[1]).slice(0,10),tot=D.reduce((a,b)=>a+b,0),gp=G.reduce((a,b)=>a+b,0),ed=Object.keys(EH).length;
+ modal(`<div class="dash"><h3>📊 ${T("Dashboard")}</h3><div class="row"><div class="card"><b>${tot}</b><br>deleted messages (30 days)</div><div class="card"><b>${gp}</b><br>ghost pings</div><div class="card"><b>${ed}</b><br>edited messages tracked</div></div>
+ <h4>Per day (red: deleted, yellow: ghost pings)</h4><div class="bars">${D.map((n,i)=>`<i title="${new Date(now-(days-1-i)*864e5).toLocaleDateString(LOC())}: ${n}" style="height:${n/mx*100}%"></i><i class="g" style="height:${G[i]/mx*100}%"></i>`).join("")}</div><div class="warn" style="display:flex;justify-content:space-between"><span>-30 d</span><span>today</span></div>
+ <h4>Who deletes the most</h4>${top.map(([n,c])=>`<div style="display:flex;gap:6px"><span style="width:120px;overflow:hidden">${esc(n)}</span><i style="background:var(--red);height:12px;margin-top:4px;width:${c/top[0][1]*60}%"></i> ${c}</div>`).join("")||'<p class="warn">Nothing yet.</p>'}</div>`)}
+function exportEdits(){const rows=Object.entries(EH).map(([id,v])=>({id,versions:v,now:(cache.find(m=>m.id===id)||{}).content??null}));dl("edit_history.json",JSON.stringify(rows,null,1),"application/json")}
+const _sdl14=showDel;showDel=()=>{_sdl14();const a=$("list").querySelector('[data-l="exp"]');a&&a.insertAdjacentHTML("afterend",`<br><a href="#" id="ldash">📊 ${T("Dashboard")}</a><br><a href="#" id="ledh">${T("Export edit history")}</a>`)};
+$("list").addEventListener("click",e=>{if(e.target.id==="ldash"){e.preventDefault();e.stopImmediatePropagation();dashboard()}if(e.target.id==="ledh"){e.preventDefault();e.stopImmediatePropagation();exportEdits()}},true);
+
+// ---------- phones: swipe left / right between Chats, chat and Clean
+let tx0=null;addEventListener("touchstart",e=>{if(innerWidth<=700)tx0=[e.touches[0].clientX,e.touches[0].clientY]},{passive:true});
+addEventListener("touchend",e=>{if(!tx0)return;const dx=e.changedTouches[0].clientX-tx0[0],dy=e.changedTouches[0].clientY-tx0[1];tx0=null;if(Math.abs(dx)<80||Math.abs(dy)>60)return;const order=["c","m"].concat(pv("dmc_clean",1)?["p"]:[]),i=order.indexOf(document.body.dataset.v);const j=Math.max(0,Math.min(order.length-1,i+(dx<0?1:-1)));document.body.dataset.v=order[j]},{passive:true});
+NEW12.unshift("Mute chats and servers or get only @mentions (right-click), unread dots and mention badges on servers","@mention suggestions while typing, GIF picker","Search with filters: from: mentions: has: before: after: during: pinned:","Members panel for server channels","Undo for 10 seconds after deleting a message","Compact mode, text size, reopens your last chat","Logger dashboard and edit-history export","Alt+↑/↓ switches chats, Ctrl+Shift+M mutes");
 applyLang();
 </script>
 

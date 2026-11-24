@@ -40,3 +40,6 @@ Free relay support (Discord blocks websites; `relay/worker.js` for Cloudflare Wo
 
 ## v13
 Use it as your everyday Discord: the 🧹 button (or Settings) hides every cleaning tool (delete panel, checkboxes, red highlights, log), and the ⊘ Deleted messages view can be hidden too. Friends page (online / all / pending / blocked, add friend, accept, remove, block), status (online, idle, do not disturb, invisible) and custom status, profile popups with About me and mutual servers, pinned messages, edit your display name and About me, calls open in Discord. Cleaner Discord-style sidebar.
+
+## v14
+Mute a chat or server or get only @mentions (right-click), unread dots and red mention badges on server icons, @mention suggestions while typing, GIF picker (Discord's Tenor search), search with filters (from: mentions: has: before: after: during: pinned:), members panel for server channels (people active in the channel), 10-second undo after deleting a message, compact mode and text size, reopens your last chat, Alt+↑/↓ and Ctrl+Shift+M, logger dashboard and edit-history export, swipe between screens on phones.

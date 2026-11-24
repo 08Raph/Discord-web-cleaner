@@ -1504,16 +1504,75 @@ def options_from_dict(d, keep_ids=(), backup_dir=None):
 
 
 # ----------------------------------------------------------------- find text in a chat
-def search_text(api, channel_id, text, guild_id=None, offset=0):
-    """Discord search for a word in one chat (everyone's messages).
-    Returns (total, [messages]) or (None, []) if search isn't available."""
-    from urllib.parse import quote
+SEARCH_HAS = {"link", "embed", "file", "video", "image", "sound", "sticker", "poll", "snapshot"}
+
+
+def parse_search(text, people=(), me_id=None):
+    """Discord-style search text -> (words, [(param, value)]).
+    Understands from:name mentions:name has:link|image|file|video|embed|sound|sticker
+    before:YYYY-MM-DD after:YYYY-MM-DD during:YYYY-MM-DD pinned:true|false.
+    people: user dicts used to turn names into ids. Unknown filters stay as words."""
+    from datetime import datetime, timedelta
+    words, params = [], []
+
+    def who(q):
+        q = q.lower().lstrip("@")
+        if q == "me" and me_id:
+            return me_id
+        for exact in (True, False):
+            for u in people or ():
+                names = [(u.get("global_name") or "").lower(), (u.get("username") or "").lower()]
+                if any(n == q if exact else n.startswith(q) for n in names if n):
+                    return u.get("id")
+        return None
+    for tok in re.findall(r'\S+:"[^"]*"|\S+', text or ""):
+        m = re.match(r"(?i)^(from|mentions|has|before|after|during|pinned):(.+)$", tok)
+        if not m:
+            words.append(tok)
+            continue
+        key, val = m.group(1).lower(), m.group(2).strip('"')
+        if key in ("from", "mentions"):
+            uid = who(val)
+            if uid:
+                params.append(("author_id" if key == "from" else "mentions", uid))
+            else:
+                words.append(tok)
+        elif key == "has":
+            v = val.lower().rstrip("s")
+            v = {"picture": "image", "pic": "image", "attachment": "file", "url": "link"}.get(v, v)
+            params.append(("has", v)) if v in SEARCH_HAS else words.append(tok)
+        elif key == "pinned":
+            params.append(("pinned", "true" if val.lower() in ("true", "yes", "1") else "false"))
+        else:
+            try:
+                day = datetime.strptime(val, "%Y-%m-%d")
+            except ValueError:
+                words.append(tok)
+                continue
+            nxt = day + timedelta(days=1)
+            if key == "before":
+                params.append(("max_id", str(date_to_snowflake(day))))
+            elif key == "after":
+                params.append(("min_id", str(date_to_snowflake(nxt))))
+            else:
+                params += [("min_id", str(date_to_snowflake(day))),
+                           ("max_id", str(date_to_snowflake(nxt)))]
+    return " ".join(words), params
+
+
+def search_text(api, channel_id, text, guild_id=None, offset=0, people=None, me_id=None):
+    """Discord search in one chat (everyone's messages). The text may contain filters
+    (see parse_search). Returns (total, [messages]) or (None, []) if search isn't available."""
+    from urllib.parse import quote, urlencode
+    words, params = parse_search(text, people or (), me_id)
     if guild_id:
         base = f"/guilds/{guild_id}/messages/search?channel_id={channel_id}"
     else:
         base = f"/channels/{channel_id}/messages/search?"
     sep = "&" if "?" in base and not base.endswith("?") else ""
-    path = f"{base}{sep}content={quote(text)}&offset={offset}"
+    extra = ("&" + urlencode(params)) if params else ""
+    path = f"{base}{sep}" + (f"content={quote(words)}&" if words else "") + \
+        f"offset={offset}{extra}"
     for _ in range(3):
         st, data = api.request("GET", path)
         if st == 202:

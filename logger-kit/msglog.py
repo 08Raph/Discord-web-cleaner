@@ -140,6 +140,14 @@ class Store:
                     out.setdefault(mid, []).append(old)
         return out
 
+    def all_edits(self, account):
+        """Every earlier version of edited messages: [{message_id, channel_id, old, at}]."""
+        with self.lock:
+            rows = self.db.execute(
+                "SELECT message_id, channel_id, old, at FROM edits WHERE account=? "
+                "ORDER BY message_id, at", (account,)).fetchall()
+        return [{"message_id": r[0], "channel_id": r[1], "old": r[2], "at": r[3]} for r in rows]
+
     def search_deleted(self, account, text, limit=500):
         like = f"%{text}%"
         with self.lock:
