@@ -1,7 +1,19 @@
 # Discord Message Cleaner (web)
 
-Static site: no build step. Upload everything in this folder to a public GitHub repo
-(root, or a `/docs` folder), then Settings → Pages → Deploy from a branch.
+The browser version of Discord Message Cleaner: same look and features as the Windows app,
+nothing to download. Static site, no build step.
+
+## Put it online (GitHub Pages)
+1. Upload everything in this folder to a public GitHub repo (root, or a `/docs` folder).
+2. Settings → Pages → Deploy from a branch → `main` / root → Save.
+3. **Set up the free relay** (needed): Discord refuses requests that come from other websites,
+   so the page talks to Discord through a tiny Cloudflare Worker you own. Steps:
+   [`relay/README.md`](relay/README.md). Then put its address in `config.js` (`RELAY: "https://…"`)
+   so every visitor uses it, or paste it in the app under **Connection**.
+4. Open `https://<your-name>.github.io/<repo>/`. Press **Try the demo** to look around without an account.
+
+The Windows app (<https://github.com/08Raph/Discord-clearer>) connects to Discord directly and
+needs no relay.
 
 ## Make it feel like the Windows app
 Open the page in Chrome or Edge and click **Install as app** (or the install icon in the address bar).
@@ -24,3 +36,6 @@ Chat list sections (Direct messages / Group DMs) and refresh, quick switcher for
 
 ## v11
 Separate Deleted messages view (⊘ in the server bar), find bar (Ctrl+F) with counter and prev/next, selected chats as chips, "Clean this chat" box in the chat header, rules with enable switch / days / last run, guided tour that points at the real controls, APP / you / mention markers, activity entries can be removed. Fixed a startup error that could stop the logger and rules code from loading.
+
+## v12
+Free relay support (Discord blocks websites; `relay/worker.js` for Cloudflare Workers, with automatic fallback and a Test button), finds messages deleted or edited while the page was closed (recent DMs, logger on), full edit history, up to 10 files per message with paste and drag & drop, typing indicator, unread counts on chats / tab title / app icon, collapsible "More filters", version and What's new in Settings, more of the interface translated (dates follow the chosen language), demo messages in the right order, settings windows no longer keep old click handlers.

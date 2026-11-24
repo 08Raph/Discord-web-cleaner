@@ -287,6 +287,27 @@ class Store:
                         pass
         return len(rows)
 
+    def prune_deleted(self, keep_days):
+        """Forget saved deleted messages (and their pictures) older than keep_days.
+        keep_days 0 or less keeps them forever. Returns removed rows."""
+        if not keep_days or keep_days <= 0:
+            return 0
+        cutoff = time.time() - keep_days * 86400
+        with self.lock:
+            rows = self.db.execute("SELECT attachments FROM deleted WHERE deleted_at < ?",
+                                   (cutoff,)).fetchall()
+            self.db.execute("DELETE FROM deleted WHERE deleted_at < ?", (cutoff,))
+            self.db.execute("DELETE FROM events WHERE at < ?", (cutoff,))
+            self.db.commit()
+        for (atts,) in rows:
+            for a in json.loads(atts or "[]"):
+                if a.get("local"):
+                    try:
+                        os.remove(os.path.join(files_dir(), os.path.basename(a["local"])))
+                    except OSError:
+                        pass
+        return len(rows)
+
     # ---------------------------------------------------------- app side
     def chats(self, account):
         with self.lock:
