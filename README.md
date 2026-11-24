@@ -49,3 +49,6 @@ Cleaner chat header with icons (call, pins, members, search, more, cleaning tool
 
 ## v16
 Everyday tools (✦ in the server bar): an archive of chosen chats kept in this browser (IndexedDB) that you can search offline (words, "exact phrases", a person, dates, only yours), "Your year" stats made from it, reminders on any message (⏰ on hover), send later (🕓 next to Send, only while the page is open; missed messages wait instead of being sent by surprise), saved replies (`;name` + Tab or 📝), keyword alerts with an inbox, privacy sweeper (leave servers, close old DMs, find inactive friends) and **safe mode**: random pauses and daily limits for everything automatic, to keep the risk with Discord as low as possible. Nothing about these features leaves your browser except the normal Discord requests they make.
+
+## v17
+Risk tab: deleting, automatic clean-up rules, the privacy sweeper and scheduled messages use your account like a bot, which Discord's rules don't allow, so they start **switched off** and need a tick (with a confirmation) in the Risk tab (⚠ link under the Run button, or ✦ Everyday tools). A one-time "Before you start" warning appears on first use. Preview, archive and search, Your year, reminders, saved replies and keyword alerts always work because they only read or work in your browser. Nothing here tries to hide from Discord's detection.
