@@ -209,6 +209,8 @@ class Pacer:
         self.delay = self.base
         self.ok_streak = 0
         self.lock = threading.Lock()
+        self.jitter = 0.0          # safe mode: random extra wait (fraction of the delay)
+        self.on_delete = None      # safe mode: counts deletes for the daily limit
 
     def on_rate_limit(self, retry_after):
         if not self.auto:
@@ -225,6 +227,11 @@ class Pacer:
                 self.delay = max(self.base, self.delay * 0.85)
                 self.ok_streak = 0
             d = self.delay
+        if self.on_delete:
+            self.on_delete()
+        if self.jitter:
+            import random
+            d *= 1 + random.uniform(0, self.jitter)
         sleep(d)
 
 
@@ -564,8 +571,8 @@ def list_guilds(api):
     st, guilds = api.request("GET", "/users/@me/guilds")
     if st != 200:
         raise RuntimeError(friendly_error(st, "load your servers"))
-    return [{"id": g["id"], "name": g.get("name", "Server"), "icon": guild_icon_url(g)}
-            for g in guilds or []]
+    return [{"id": g["id"], "name": g.get("name", "Server"), "icon": guild_icon_url(g),
+             "owner": bool(g.get("owner"))} for g in guilds or []]
 
 
 def list_guild_roles(api, guild_id):

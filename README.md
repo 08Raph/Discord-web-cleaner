@@ -46,3 +46,6 @@ Mute a chat or server or get only @mentions (right-click), unread dots and red m
 
 ## v15
 Cleaner chat header with icons (call, pins, members, search, more, cleaning tools) and a ⋯ menu for everything else, calls / pins / people joining shown like in Discord instead of "[system message]", activity log folds to one line, tablet layout (the cleaning panel slides in from the right), Customize: 6 themes, accent colour, time style, avatars on/off, log on/off.
+
+## v16
+Everyday tools (✦ in the server bar): an archive of chosen chats kept in this browser (IndexedDB) that you can search offline (words, "exact phrases", a person, dates, only yours), "Your year" stats made from it, reminders on any message (⏰ on hover), send later (🕓 next to Send, only while the page is open; missed messages wait instead of being sent by surprise), saved replies (`;name` + Tab or 📝), keyword alerts with an inbox, privacy sweeper (leave servers, close old DMs, find inactive friends) and **safe mode**: random pauses and daily limits for everything automatic, to keep the risk with Discord as low as possible. Nothing about these features leaves your browser except the normal Discord requests they make.
